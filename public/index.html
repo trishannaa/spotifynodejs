@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Music Player</title>
+  <style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  background-color: #121212; 
+  color: #ffffff; 
+  text-align: center;
+  padding: 20px;
+}
+
+h1 {
+  margin-bottom: 20px;
+  font-size: 2.5rem; 
+  color: #1DB954; 
+}
+
+#uploadForm {
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #282828; 
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  max-width: 500px;
+  margin: auto;
+}
+
+#uploadForm input {
+  padding: 10px;
+  margin: 5px;
+  width: calc(100% - 24px);
+  border: 1px solid #1DB954; 
+  border-radius: 4px;
+  background-color: #333; 
+  color: #ffffff; 
+}
+
+#uploadForm button {
+  padding: 10px 15px;
+  background-color: #1DB954; 
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+#uploadForm button:hover {
+  background-color: #1ed760; 
+}
+
+h2 {
+  margin-top: 40px;
+  margin-bottom: 20px;
+  font-size: 2rem; 
+}
+
+#songsList {
+  list-style-type: none;
+  padding: 0;
+}
+
+#songsList li {
+  padding: 10px;
+  background-color: #333; 
+  margin-bottom: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#songsList button {
+  padding: 8px 12px;
+  background-color: #1DB954; 
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#songsList button:hover {
+  background-color: #1ed760; 
+}
+
+#audioPlayer {
+  margin-top: 20px;
+  display: none;
+  width: 100%; 
+  border-radius: 4px;
+  background-color: #282828; 
+}
+
+  </style>
+</head>
+<body>
+  <h1>Trisha's Musics</h1>
+
+  
+  <form id="uploadForm" enctype="multipart/form-data">
+    <input type="text" name="title" placeholder="Song Title" required>
+    <input type="text" name="artist" placeholder="Artist" required>
+    <input type="text" name="album" placeholder="Album">
+    <input type="file" name="song" accept="audio/*" required>
+    <button type="submit">Upload</button>
+  </form>
+
+  <h2>Songs List</h2>
+  <ul id="songsList"></ul>
+
+  
+  <audio id="audioPlayer" controls>
+    Your browser does not support the audio element.
+  </audio>
+
+  <div id="lyrics" style="margin-top: 20px; display: none;">
+<h3>Lyrics:</h3>
+<p id=""></p>
+</div>
+
+  <script>
+    const form = document.getElementById('uploadForm');
+    const songsList = document.getElementById('songsList');
+    const audioPlayer = document.getElementById('audioPlayer');
+
+    
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const formData = new FormData(form);
+      const response = await fetch('/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        alert('Song uploaded!');
+        loadSongs();  
+      } else {
+        alert('Failed to upload song.');
+      }
+    });
+
+    
+    async function loadSongs() {
+      const response = await fetch('/songs');
+      const songs = await response.json();
+
+      songsList.innerHTML = '';  
+
+      songs.forEach(song => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          ${song.title} by ${song.artist} 
+          <button onclick="playSong(${song.id})">Play</button>
+        `;
+        songsList.appendChild(li);
+      });
+    }
+
+    
+    function playSong(id) {
+      const filePath = `/play/${id}`;  
+      audioPlayer.src = filePath;  
+      audioPlayer.style.display = 'block';  
+      audioPlayer.play();
+    }
+
+    
+    loadSongs();
+  </script>
+</body>
+</html>
